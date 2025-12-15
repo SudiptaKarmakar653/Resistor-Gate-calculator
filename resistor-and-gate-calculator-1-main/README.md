@@ -43,4 +43,4 @@ python app.py
 ## Live link:https://resistor-and-gate-calculatorsdp.onrender.com/
 
 
-created by SUBHODEEP PAL.
+created by SUDIPTA KARMAKAR.
