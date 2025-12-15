@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electronics Pro | Resistor & Logic Gate Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3f37c9;
+            --accent-color: #4cc9f0;
+            --dark-color: #2b2d42;
+            --light-color: #f8f9fa;
+            --success-color: #4caf50;
+            --warning-color: #ff9800;
+            --error-color: #f44336;
+            --border-radius: 8px;
+            --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow: hidden;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 1rem 1.5rem;
+            background: transparent;
+            border: none;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-color);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 2rem;
+            margin-top: 1rem;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .calculator {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .calculator h2 {
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .calculator h2 i {
+            color: var(--primary-color);
+        }
+
+        .band-selector, .gate-selector {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .band-options, .gate-selector {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius);
+            font-family: 'Montserrat', sans-serif;
+            background-color: white;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        .bands-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1rem;
+        }
+
+        .band-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .band-group label {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .resistor-visual {
+            display: flex;
+            justify-content: center;
+            margin: 1.5rem 0;
+        }
+
+        .resistor-body {
+            display: flex;
+            align-items: center;
+            background: #f0f0f0;
+            height: 60px;
+            width: 300px;
+            position: relative;
+            border-radius: 30px;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .resistor-band {
+            height: 100%;
+            width: 20px;
+            position: absolute;
+            top: 0;
+        }
+
+        .resistor-band:nth-child(1) { left: 50px; }
+        .resistor-band:nth-child(2) { left: 90px; }
+        .resistor-band:nth-child(3) { left: 130px; }
+        .resistor-band:nth-child(4) { left: 170px; }
+        .resistor-band:nth-child(5) { left: 210px; }
+        .resistor-band:nth-child(6) { left: 250px; }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .input-switch {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-switch label {
+            font-weight: 500;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: var(--transition);
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: var(--transition);
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--success-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .result {
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .result h3 {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+            color: var(--dark-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .result-display {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .result-display p {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .result-display span {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .gate-symbol {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .gate-symbol svg {
+            width: 120px;
+            height: 120px;
+            fill: var(--primary-color);
+        }
+
+        .color-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .color-option:hover {
+            background-color: #f0f0f0;
+        }
+
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 1px solid #ddd;
+        }
+
+        .professional-badge {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-btn {
+                padding: 0.75rem;
+            }
+            
+            .bands-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .resistor-body {
+                width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Electronics Pro <span class="professional-badge"><i class="fas fa-certificate"></i> PROFESSIONAL</span></h1>
+            <p>Advanced toolset for electronics engineers and hobbyists</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="resistor">
+                <i class="fas fa-resistor"></i> Resistor Calculator
+            </button>
+            <button class="tab-btn" data-tab="gate">
+                <i class="fas fa-project-diagram"></i> Logic Gate Simulator
+            </button>
+        </div>
+
+        <div class="tab-content active" id="resistor">
+            <div class="calculator">
+                <h2><i class="fas fa-palette"></i> Resistor Color Code Calculator</h2>
+                
+                <div class="band-selector">
+                    <div class="band-options">
+                        <label for="band-count">Number of Bands:</label>
+                        <select id="band-count">
+                            <option value="4">4 Bands</option>
+                            <option value="5">5 Bands</option>
+                            <option value="6">6 Bands</option>
+                        </select>
+                    </div>
+                    
+                    <div class="bands-container">
+                        <div class="band-group">
+                            <label for="band1">1st Band (1st Digit)</label>
+                            <select id="band1" class="band-select">
+                                <option value="black">Black - 0</option>
+                                <option value="brown">Brown - 1</option>
+                                <option value="red">Red - 2</option>
+                                <option value="orange">Orange - 3</option>
+                                <option value="yellow">Yellow - 4</option>
+                                <option value="green">Green - 5</option>
+                                <option value="blue">Blue - 6</option>
+                                <option value="violet">Violet - 7</option>
+                                <option value="gray">Gray - 8</option>
+                                <option value="white">White - 9</option>
+                            </select>
+                        </div>
+                        
+                        <div class="band-group">
+                            <label for="band2">2nd Band (2nd Digit)</label>
+                            <select id="band2" class="band-select">
+                                <option value="black">Black - 0</option>
+                                <option value="brown">Brown - 1</option>
+                                <option value="red">Red - 2</option>
+                                <option value="orange">Orange - 3</option>
+                                <option value="yellow">Yellow - 4</option>
+                                <option value="green">Green - 5</option>
+                                <option value="blue">Blue - 6</option>
+                                <option value="violet">Violet - 7</option>
+                                <option value="gray">Gray - 8</option>
+                                <option value="white">White - 9</option>
+                            </select>
+                        </div>
+                        
+                        <div class="band-group">
+                            <label for="band3">3rd Band (Multiplier)</label>
+                            <select id="band3" class="band-select">
+                                <option value="black">Black - 1Ω</option>
+                                <option value="brown">Brown - 10Ω</option>
+                                <option value="red">Red - 100Ω</option>
+                                <option value="orange">Orange - 1kΩ</option>
+                                <option value="yellow">Yellow - 10kΩ</option>
+                                <option value="green">Green - 100kΩ</option>
+                                <option value="blue">Blue - 1MΩ</option>
+                                <option value="violet">Violet - 10MΩ</option>
+                                <option value="gray">Gray - 100MΩ</option>
+                                <option value="white">White - 1GΩ</option>
+                                <option value="gold">Gold - 0.1Ω</option>
+                                <option value="silver">Silver - 0.01Ω</option>
+                            </select>
+                        </div>
+                        
+                        <div class="band-group">
+                            <label for="band4">4th Band (Tolerance)</label>
+                            <select id="band4" class="band-select">
+                                <option value="brown">Brown - ±1%</option>
+                                <option value="red">Red - ±2%</option>
+                                <option value="green">Green - ±0.5%</option>
+                                <option value="blue">Blue - ±0.25%</option>
+                                <option value="violet">Violet - ±0.1%</option>
+                                <option value="gray">Gray - ±0.05%</option>
+                                <option value="gold">Gold - ±5%</option>
+                                <option value="silver">Silver - ±10%</option>
+                                <option value="none">None - ±20%</option>
+                            </select>
+                        </div>
+                        
+                        <div class="band-group" id="band5-group" style="display: none;">
+                            <label for="band5">5th Band (3rd Digit)</label>
+                            <select id="band5" class="band-select">
+                                <option value="black">Black - 0</option>
+                                <option value="brown">Brown - 1</option>
+                                <option value="red">Red - 2</option>
+                                <option value="orange">Orange - 3</option>
+                                <option value="yellow">Yellow - 4</option>
+                                <option value="green">Green - 5</option>
+                                <option value="blue">Blue - 6</option>
+                                <option value="violet">Violet - 7</option>
+                                <option value="gray">Gray - 8</option>
+                                <option value="white">White - 9</option>
+                            </select>
+                        </div>
+                        
+                        <div class="band-group" id="band6-group" style="display: none;">
+                            <label for="band6">6th Band (Temp. Coeff.)</label>
+                            <select id="band6" class="band-select">
+                                <option value="black">Black - 250ppm/°C</option>
+                                <option value="brown">Brown - 100ppm/°C</option>
+                                <option value="red">Red - 50ppm/°C</option>
+                                <option value="orange">Orange - 15ppm/°C</option>
+                                <option value="yellow">Yellow - 25ppm/°C</option>
+                                <option value="green">Green - 20ppm/°C</option>
+                                <option value="blue">Blue - 10ppm/°C</option>
+                                <option value="violet">Violet - 5ppm/°C</option>
+                                <option value="gray">Gray - 1ppm/°C</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="resistor-visual">
+                        <div class="resistor-body">
+                            <div class="resistor-band" id="band1-visual" style="background-color: brown;"></div>
+                            <div class="resistor-band" id="band2-visual" style="background-color: black;"></div>
+                            <div class="resistor-band" id="band3-visual" style="background-color: red;"></div>
+                            <div class="resistor-band" id="band4-visual" style="background-color: gold;"></div>
+                            <div class="resistor-band" id="band5-visual" style="display: none;"></div>
+                            <div class="resistor-band" id="band6-visual" style="display: none;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="calculate-resistance" class="btn">
+                    <i class="fas fa-calculator"></i> Calculate Resistance
+                </button>
+                
+                <div class="result">
+                    <h3><i class="fas fa-chart-line"></i> Analysis Results</h3>
+                    <div class="result-display">
+                        <p>Resistance: <span id="resistance-value">--</span></p>
+                        <p>Tolerance: <span id="tolerance-value">--</span></p>
+                        <p>Minimum Value: <span id="min-value">--</span></p>
+                        <p>Maximum Value: <span id="max-value">--</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="tab-content" id="gate">
+            <div class="calculator">
+                <h2><i class="fas fa-microchip"></i> Logic Gate Simulator</h2>
+                
+                <div class="gate-selector">
+                    <label for="gate-type">Select Gate Type:</label>
+                    <select id="gate-type">
+                        <option value="AND">AND Gate</option>
+                        <option value="OR">OR Gate</option>
+                        <option value="NOT">NOT Gate (Inverter)</option>
+                        <option value="NAND">NAND Gate</option>
+                        <option value="NOR">NOR Gate</option>
+                        <option value="XOR">XOR Gate</option>
+                        <option value="XNOR">XNOR Gate</option>
+                    </select>
+                </div>
+                
+                <div class="input-container">
+                    <div class="input-buttons">
+                        <button class="add-input btn">
+                            <i class="fas fa-plus"></i> Add Input
+                        </button>
+                        <button class="remove-input btn">
+                            <i class="fas fa-minus"></i> Remove Input
+                        </button>
+                    </div>
+                    <div class="inputs">
+                        <div class="input-switch">
+                            <label>Input A:</label>
+                            <label class="switch">
+                                <input type="checkbox" class="gate-input" data-input="A">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="input-state">0</span>
+                        </div>
+                        <div class="input-switch">
+                            <label>Input B:</label>
+                            <label class="switch">
+                                <input type="checkbox" class="gate-input" data-input="B">
+                                <span class="slider"></span>
+                            </label>
+                            <span class="input-state">0</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="calculate-gate" class="btn">
+                    <i class="fas fa-play"></i> Simulate Gate
+                </button>
+                
+                <div class="result">
+                    <h3><i class="fas fa-lightbulb"></i> Simulation Result</h3>
+                    <div class="result-display">
+                        <p>Output: <span id="gate-output">--</span></p>
+                        <p>Truth Table: <span id="truth-table">--</span></p>
+                    </div>
+                </div>
+                
+                <div class="gate-symbol">
+                    <svg id="gate-symbol" viewBox="0 0 100 100">
+                        <!-- Gate symbol will be rendered here by JavaScript -->
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.getAttribute('data-tab');
+                    
+                    // Update active tab button
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    
+                    // Update active tab content
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    document.getElementById(tabId).classList.add('active');
+                });
+            });
+            
+            // Resistor band count change handler
+            const bandCountSelect = document.getElementById('band-count');
+            const band5Group = document.getElementById('band5-group');
+            const band6Group = document.getElementById('band6-group');
+            const band5Visual = document.getElementById('band5-visual');
+            const band6Visual = document.getElementById('band6-visual');
+            
+            bandCountSelect.addEventListener('change', function() {
+                const bandCount = parseInt(this.value);
+                
+                // Show/hide band options
+                band5Group.style.display = bandCount >= 5 ? 'block' : 'none';
+                band6Group.style.display = bandCount >= 6 ? 'block' : 'none';
+                
+                // Show/hide visual bands
+                band5Visual.style.display = bandCount >= 5 ? 'block' : 'none';
+                band6Visual.style.display = bandCount >= 6 ? 'block' : 'none';
+            });
+            
+            // Resistor band color change handler
+            const bandSelects = document.querySelectorAll('.band-select');
+            bandSelects.forEach(select => {
+                select.addEventListener('change', function() {
+                    const bandId = this.id;
+                    const color = this.value;
+                    const visualBand = document.getElementById(`${bandId}-visual`);
+                    
+                    if (visualBand) {
+                        visualBand.style.backgroundColor = color;
+                    }
+                });
+            });
+            
+            // Calculate resistance button handler
+            const calculateResistanceBtn = document.getElementById('calculate-resistance');
+            calculateResistanceBtn.addEventListener('click', function() {
+                // This is a simplified calculation - in a real app you'd implement the full logic
+                const bandCount = parseInt(bandCountSelect.value);
+                const band1 = document.getElementById('band1').value;
+                const band2 = document.getElementById('band2').value;
+                const band3 = document.getElementById('band3').value;
+                const band4 = document.getElementById('band4').value;
+                
+                // Get digit values from colors (simplified)
+                const digitValues = {
+                    'black': 0, 'brown': 1, 'red': 2, 'orange': 3, 'yellow': 4,
+                    'green': 5, 'blue': 6, 'violet': 7, 'gray': 8, 'white': 9
+                };
+                
+                // Get multiplier values from colors (simplified)
+                const multiplierValues = {
+                    'black': 1, 'brown': 10, 'red': 100, 'orange': 1000, 'yellow': 10000,
+                    'green': 100000, 'blue': 1000000, 'violet': 10000000, 'gray': 100000000,
+                    'white': 1000000000, 'gold': 0.1, 'silver': 0.01
+                };
+                
+                // Get tolerance values from colors (simplified)
+                const toleranceValues = {
+                    'brown': '±1%', 'red': '±2%', 'green': '±0.5%', 'blue': '±0.25%',
+                    'violet': '±0.1%', 'gray': '±0.05%', 'gold': '±5%', 'silver': '±10%',
+                    'none': '±20%'
+                };
+                
+                // Calculate resistance
+                let significantDigits;
+                if (bandCount === 4) {
+                    significantDigits = digitValues[band1] * 10 + digitValues[band2];
+                } else {
+                    significantDigits = digitValues[band1] * 100 + digitValues[band2] * 10 + (bandCount >= 5 ? digitValues[document.getElementById('band5').value] : 0);
+                }
+                
+                const multiplier = multiplierValues[band3];
+                const tolerance = toleranceValues[band4];
+                
+                const resistance = significantDigits * multiplier;
+                
+                // Format resistance with proper units
+                let resistanceStr;
+                if (resistance >= 1000000) {
+                    resistanceStr = (resistance / 1000000).toFixed(2) + ' MΩ';
+                } else if (resistance >= 1000) {
+                    resistanceStr = (resistance / 1000).toFixed(2) + ' kΩ';
+                } else {
+                    resistanceStr = resistance.toFixed(2) + ' Ω';
+                }
+                
+                // Calculate min/max values based on tolerance
+                let tolerancePercent = parseFloat(tolerance.replace('±', '').replace('%', ''));
+                let minValue = resistance * (1 - tolerancePercent/100);
+                let maxValue = resistance * (1 + tolerancePercent/100);
+                
+                // Format min/max values
+                const formatValue = (value) => {
+                    if (value >= 1000000) {
+                        return (value / 1000000).toFixed(2) + ' MΩ';
+                    } else if (value >= 1000) {
+                        return (value / 1000).toFixed(2) + ' kΩ';
+                    } else {
+                        return value.toFixed(2) + ' Ω';
+                    }
+                };
+                
+                // Update results
+                document.getElementById('resistance-value').textContent = resistanceStr;
+                document.getElementById('tolerance-value').textContent = tolerance;
+                document.getElementById('min-value').textContent = formatValue(minValue);
+                document.getElementById('max-value').textContent = formatValue(maxValue);
+            });
+            
+            // Logic gate input management
+            const addInputBtn = document.querySelector('.add-input');
+            const removeInputBtn = document.querySelector('.remove-input');
+            const inputsContainer = document.querySelector('.inputs');
+            let inputCount = 2;
+            const inputLetters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+            
+            addInputBtn.addEventListener('click', function() {
+                if (inputCount < 8) {
+                    inputCount++;
+                    const inputLetter = inputLetters[inputCount - 1];
+                    
+                    const inputDiv = document.createElement('div');
+                    inputDiv.className = 'input-switch';
+                    inputDiv.innerHTML = `
+                        <label>Input ${inputLetter}:</label>
+                        <label class="switch">
+                            <input type="checkbox" class="gate-input" data-input="${inputLetter}">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="input-state">0</span>
+                    `;
+                    
+                    inputsContainer.appendChild(inputDiv);
+                    
+                    // Add event listener to the new switch
+                    const newSwitch = inputDiv.querySelector('.gate-input');
+                    newSwitch.addEventListener('change', updateInputState);
+                } else {
+                    alert('Maximum number of inputs reached (8)');
+                }
+            });
+            
+            removeInputBtn.addEventListener('click', function() {
+                if (inputCount > 2) {
+                    inputsContainer.removeChild(inputsContainer.lastElementChild);
+                    inputCount--;
+                } else {
+                    alert('Minimum number of inputs is 2');
+                }
+            });
+            
+            // Update input state display
+            function updateInputState(e) {
+                const input = e.target;
+                const stateSpan = input.parentElement.nextElementSibling;
+                stateSpan.textContent = input.checked ? '1' : '0';
+            }
+            
+            // Add event listeners to existing switches
+            document.querySelectorAll('.gate-input').forEach(input => {
+                input.addEventListener('change', updateInputState);
+            });
+            
+            // Calculate gate output
+            const calculateGateBtn = document.getElementById('calculate-gate');
+            calculateGateBtn.addEventListener('click', function() {
+                const gateType = document.getElementById('gate-type').value;
+                const inputs = Array.from(document.querySelectorAll('.gate-input')).map(input => input.checked);
+                
+                let output;
+                
+                switch (gateType) {
+                    case 'AND':
+                        output = inputs.every(i => i);
+                        break;
+                    case 'OR':
+                        output = inputs.some(i => i);
+                        break;
+                    case 'NOT':
+                        output = !inputs[0];
+                        break;
+                    case 'NAND':
+                        output = !inputs.every(i => i);
+                        break;
+                    case 'NOR':
+                        output = !inputs.some(i => i);
+                        break;
+                    case 'XOR':
+                        output = inputs.filter(i => i).length % 2 !== 0;
+                        break;
+                    case 'XNOR':
+                        output = inputs.filter(i => i).length % 2 === 0;
+                        break;
+                    default:
+                        output = false;
+                }
+                
+                document.getElementById('gate-output').textContent = output ? '1 (HIGH)' : '0 (LOW)';
+                
+                // Update gate symbol
+                updateGateSymbol(gateType);
+            });
+            
+            // Update gate symbol
+            function updateGateSymbol(gateType) {
+                const svg = document.getElementById('gate-symbol');
+                svg.innerHTML = '';
+                
+                // This is a simplified representation - in a real app you'd create proper SVG paths
+                const symbol = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                
+                switch (gateType) {
+                    case 'AND':
+                        symbol.setAttribute("d", "M 20,20 L 40,20 L 50,30 L 50,70 L 40,80 L 20,80 L 20,20 Z M 50,50 L 80,50");
+                        break;
+                    case 'OR':
+                        symbol.setAttribute("d", "M 20,20 Q 50,20 50,50 Q 50,80 20,80 L 20,20 Z M 50,50 L 80,50");
+                        break;
+                    case 'NOT':
+                        symbol.setAttribute("d", "M 20,50 L 60,50 M 60,20 L 60,80 L 80,50 Z");
+                        break;
+                    case 'NAND':
+                        symbol.setAttribute("d", "M 20,20 L 40,20 L 50,30 L 50,70 L 40,80 L 20,80 L 20,20 Z M 50,50 L 70,50 A 10,10 0 0,0 80,50");
+                        break;
+                    case 'NOR':
+                        symbol.setAttribute("d", "M 20,20 Q 50,20 50,50 Q 50,80 20,80 L 20,20 Z M 50,50 L 70,50 A 10,10 0 0,0 80,50");
+                        break;
+                    case 'XOR':
+                        symbol.setAttribute("d", "M 20,20 Q 50,20 50,50 Q 50,80 20,80 L 20,20 Z M 15,20 Q 45,20 45,50 Q 45,80 15,80 M 50,50 L 80,50");
+                        break;
+                    case 'XNOR':
+                        symbol.setAttribute("d", "M 20,20 Q 50,20 50,50 Q 50,80 20,80 L 20,20 Z M 15,20 Q 45,20 45,50 Q 45,80 15,80 M 50,50 L 70,50 A 10,10 0 0,0 80,50");
+                        break;
+                }
+                
+                symbol.setAttribute("fill", "none");
+                symbol.setAttribute("stroke", "#4361ee");
+                symbol.setAttribute("stroke-width", "3");
+                svg.appendChild(symbol);
+                
+                // Add input lines
+                for (let i = 0; i < inputCount; i++) {
+                    const yPos = 20 + (60 / (inputCount - 1)) * i;
+                    const inputLine = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    inputLine.setAttribute("x1", "10");
+                    inputLine.setAttribute("y1", yPos);
+                    inputLine.setAttribute("x2", "20");
+                    inputLine.setAttribute("y2", yPos);
+                    inputLine.setAttribute("stroke", "#4361ee");
+                    inputLine.setAttribute("stroke-width", "2");
+                    svg.appendChild(inputLine);
+                }
+            }
+            
+            // Initialize with AND gate symbol
+            updateGateSymbol('AND');
+        });
+    </script>
+</body>
+</html>
